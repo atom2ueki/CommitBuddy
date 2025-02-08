@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 import argparse
-import yaml
 import os
 import subprocess
 import sys
 import requests
-
-import yaml  # Add this import at the top
+import yaml  # Ensure PyYAML is installed (pip install pyyaml)
 
 def get_default_config():
     return {
-        "model": "qwen:14b",  # Default model
+        "model": "qwen:14b",          # Default model
         "ollamaIp": "localhost:11434"  # Default Ollama server address
     }
 
@@ -19,8 +17,8 @@ def load_config():
     
     # Define config file locations in priority order
     config_locations = [
-        os.path.join(os.getcwd(), '.commit-buddy.yml'),  # Current directory
-        os.path.join(os.path.expanduser('~'), '.commit-buddy.yml'),  # Home directory
+        os.path.join(os.getcwd(), '.commit-buddy.yml'),                    # Current directory
+        os.path.join(os.path.expanduser('~'), '.commit-buddy.yml'),          # Home directory
         os.path.join(os.path.expanduser('~'), '.config', 'commit-buddy', 'config.yml')  # XDG config directory
     ]
     
@@ -76,19 +74,18 @@ def generate_commit_message_http(diff, config):
     url = f"http://{config['ollamaIp']}/api/generate"
     headers = {"Content-Type": "application/json"}
     
-    prompt = f"""
-You are an assistant that writes commit messages following the Conventional Commits specification.
-Based on the following diff of staged changes, generate a clear, concise commit message.
-Be sure to use one of the following prefixes as appropriate: "feat:", "fix:", "docs:", "style:", "refactor:", "test:", or "chore:".
-IMPORTANT: Respond ONLY with the commit message text, without any markdown formatting, code blocks, or backticks.
-The message should be a single line without any wrapping or additional formatting.
+    # Updated prompt as specified
+    prompt = "You are a commit message generator that strictly follows the Conventional Commits specification (https://www.conventionalcommits.org/).\n"
+    prompt += "Generate a commit message for the following changes using EXACTLY this format: type: description\n"
+    prompt += "where type must be one of: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.\n"
+    prompt += "Do not add any markdown, formatting, scope, or breaking change notation.\n"
+    prompt += "Respond with ONLY the commit message, nothing else.\n\n"
+    prompt += f"Diff:\n{diff}\n\n"
+    prompt += "Response format example:\n"
+    prompt += "feat: add user authentication\n"
+    prompt += "fix: resolve null pointer in login form\n"
+    prompt += "refactor: simplify data processing logic"
 
-Diff:
-{diff}
-
-Commit message:
-""".strip()
-    
     payload = {
         "model": config["model"],
         "prompt": prompt,
@@ -98,16 +95,12 @@ Commit message:
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        # Parse the JSON response
         result = response.json()
-        # Extract just the response field and clean it up
         commit_message = result.get('response', '').strip()
-        # Remove markdown code blocks if present
+        # Clean up the commit message if it's wrapped in markdown code blocks
         commit_message = commit_message.strip('`')
-        # Remove any 'markdown' or other language specifiers that might appear
         if '\n' in commit_message:
-            commit_message = commit_message.split('\n', 1)[1]
-        commit_message = commit_message.strip()
+            commit_message = commit_message.split('\n', 1)[-1].strip()
         if not commit_message:
             raise ValueError("Empty response from Ollama")
         print("✅ Commit message generated!")
