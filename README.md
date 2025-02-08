@@ -2,6 +2,20 @@
 
 CommitBuddy is a command-line tool that generates semantic commit messages using an AI assistant powered by the Ollama CLI. With a fun, interactive, and step-by-step process, CommitBuddy helps you craft clear, conventional commit messages while adding a bit of humor to your Git workflow.
 
+## Preview
+
+```bash
+commitbuddy doctor
+```
+
+![demo1 image](screenshots/demo1.png)
+
+```bash
+commitbuddy generate
+```
+
+![demo2 image](screenshots/demo2.png)
+
 ## Features
 
 - **Step-by-Step Process:**  
@@ -14,74 +28,73 @@ CommitBuddy is a command-line tool that generates semantic commit messages using
   - **N**: Abort the commit process.
 
 - **Diagnostic Check:**  
-  The `doctor` command verifies your configuration, confirms that the Ollama CLI is installed, and tests connectivity to your Ollama server.
+  The `doctor` command verifies your configuration, confirms Git installation, and tests connectivity to your Ollama server.
 
 ## Requirements
 
 - Python 3.6 or higher
 - [Git](https://git-scm.com/) (your project must be under Git version control)
-- [Ollama CLI](https://ollama.ai/) installed and configured
+- [Ollama](https://ollama.ai/) installed and running
 
-## Setup
+## Installation
 
 It is **highly recommended** to use a virtual environment to manage dependencies when building and using CommitBuddy.
 
-If you just want to try it out without install cli tool, just making the main.py executable first
+### Quick Start (Development)
+
+If you just want to try it out without installing as a CLI tool:
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/commitbuddy
+cd commitbuddy
+
+# Make the script executable
 chmod +x main.py 
-```
 
-### 1. Create a Virtual Environment
-
-Open your terminal in the project root and run:
-
-```bash
+# Create and activate virtual environment
 python3 -m venv venv
 source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-```
 
-### 2. Install Dependencies
-
-CommitBuddy uses only Python's standard library, but we include a `requirements.txt` file (for example, to ensure you have the correct version of `setuptools`). To install all necessary dependencies, run:
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 3. Install CommitBuddy
-
-Clone or download the repository, then install it in editable mode:
-
-```bash
+# Install in editable mode
 pip install --editable .
 ```
 
-This command creates the `commitbuddy` command-line entry point in your virtual environment.
+## Configuration
 
-### 4. Configure CommitBuddy
+CommitBuddy can be configured using a `.commit-buddy.yml` file. The configuration file is searched for in the following locations (in order of priority):
 
-Create a `config.json` file in the project root with your Ollama settings. For example:
+1. Current directory: `./.commit-buddy.yml`
+2. Home directory: `~/.commit-buddy.yml`
+3. XDG config directory: `~/.config/commit-buddy/config.yml`
 
-```json
-{
-  "model": "your-model-name",
-  "ollamaIp": "127.0.0.1"
-}
+### Example Configuration
+
+Create a `.commit-buddy.yml` file in your home directory or project directory:
+
+```yaml
+# Model configuration
+model: qwen:14b              # The Ollama model to use
+ollamaIp: localhost:11434    # Ollama server address
 ```
 
-> **Note:** Replace `"your-model-name"` with the identifier of the model you want to use (e.g., `"gpt-4"`) and adjust `"127.0.0.1"` if your Ollama server is hosted at a different address.
+If no configuration file is found, CommitBuddy will use these default settings.
 
 ## Usage
 
-After installation and configuration, you can use CommitBuddy via the following commands:
-
 ### Generate a Commit Message
 
-This command generates a semantic commit message from your staged Git changes, displays the message, and offers you three options (accept, regenerate, or abort):
+This command generates a semantic commit message from your staged Git changes:
 
 ```bash
+# If installed via pip install -e .
 commitbuddy generate
+
+# Or using the script directly
+./main.py generate
 ```
 
 When you run this command, you'll see progress messages like:
@@ -103,21 +116,17 @@ Your choice (Y/R/N):
 
 ### Run Diagnostic Check
 
-The `doctor` command runs a diagnostic check to ensure that your configuration is correct, the Ollama CLI is installed, and connectivity to your Ollama server is working:
+To verify your setup and configuration:
 
 ```bash
 commitbuddy doctor
 ```
 
-## Packaging and Distribution
-
-If you wish to distribute CommitBuddy, you can build a source distribution using:
-
-```bash
-python setup.py sdist bdist_wheel
-```
-
-Then, you can upload it to PyPI or share it directly with others.
+This will check:
+- Configuration status and location
+- Git installation
+- Ollama server connectivity
+- Model availability
 
 ## License
 
@@ -125,7 +134,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Contributing
 
-Contributions are welcome! Please open issues or submit pull requests if you have suggestions or improvements.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
