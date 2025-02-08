@@ -1,0 +1,18 @@
+# CommitBuddy Configuration
+# Place this file as .commit-buddy.yml in:
+# - Your project directory for project-specific settings
+# - Your home directory (~/.commit-buddy.yml) for global settings
+# - ~/.config/commit-buddy/config.yml for XDG-compliant location
+
+# Ollama model to use
+# Common options: 
+# - qwen:14b
+# - qwen:7b
+# - llama2
+# - codellama
+model: qwen:14b
+
+# Ollama server address
+# Format: hostname:port
+# Default is localhost:11434
+ollamaIp: localhost:11434

@@ -1,28 +1,58 @@
 #!/usr/bin/env python3
 import argparse
-import json
+import yaml
 import os
 import subprocess
 import sys
 import requests
 
+import yaml  # Add this import at the top
+
+def get_default_config():
+    return {
+        "model": "qwen:14b",  # Default model
+        "ollamaIp": "localhost:11434"  # Default Ollama server address
+    }
+
 def load_config():
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.json')
-    print("🔍 [Step 1/5] Loading configuration from config.json...")
-    if not os.path.exists(config_path):
-        print("❌ Configuration file not found! Please create a config.json file in the project root.")
-        sys.exit(1)
-    try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-        if 'model' not in config or 'ollamaIp' not in config:
-            print("❌ config.json is missing required keys ('model' and/or 'ollamaIp').")
-            sys.exit(1)
-        print("✅ Configuration loaded successfully!")
-        return config
-    except Exception as e:
-        print(f"❌ Error reading configuration: {e}")
-        sys.exit(1)
+    print("🔍 [Step 1/5] Loading configuration...")
+    
+    # Define config file locations in priority order
+    config_locations = [
+        os.path.join(os.getcwd(), '.commit-buddy.yml'),  # Current directory
+        os.path.join(os.path.expanduser('~'), '.commit-buddy.yml'),  # Home directory
+        os.path.join(os.path.expanduser('~'), '.config', 'commit-buddy', 'config.yml')  # XDG config directory
+    ]
+    
+    config = get_default_config()
+    config_loaded = False
+    
+    for config_path in config_locations:
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    user_config = yaml.safe_load(f)
+                    if user_config:  # Check if the file is not empty
+                        config.update(user_config)
+                        print(f"✅ Configuration loaded from {config_path}")
+                        config_loaded = True
+                        break
+            except Exception as e:
+                print(f"⚠️ Error reading {config_path}: {e}")
+                continue
+    
+    if not config_loaded:
+        print("ℹ️ No configuration file found. Using default settings:")
+        print(f"   - Model: {config['model']}")
+        print(f"   - Ollama IP: {config['ollamaIp']}")
+        print("\nTo customize settings, create a .commit-buddy.yml file in your home directory (~/.commit-buddy.yml)")
+        print("Example configuration:")
+        print(yaml.dump({
+            "model": "qwen:14b",
+            "ollamaIp": "localhost:11434"
+        }, default_flow_style=False))
+    
+    return config
 
 def get_staged_diff():
     print("📄 [Step 2/5] Retrieving staged diff from Git...")
@@ -132,20 +162,46 @@ def generate_command():
             print("❓ Invalid option! Please enter Y, R, or N.")
 
 def doctor_command():
-    print("🩺 Running doctor check for CommitBuddy (HTTP mode)...")
+    print("🩺 Running doctor check for CommitBuddy...")
+    
+    # Load and display configuration
     config = load_config()
-    print("🌐 Checking connectivity to Ollama server via HTTP...")
+    print("\n📋 Current Configuration:")
+    print(f"   Model: {config['model']}")
+    print(f"   Ollama IP: {config['ollamaIp']}")
+    
+    # Check Git installation
+    print("\n🔍 Checking Git installation...")
+    try:
+        git_version = subprocess.check_output(["git", "--version"], text=True).strip()
+        print(f"✅ Git found: {git_version}")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print("❌ Git not found! Please install Git to use CommitBuddy.")
+        sys.exit(1)
+    
+    # Check Ollama connectivity
+    print("\n🌐 Checking connectivity to Ollama server...")
     try:
         url = f"http://{config['ollamaIp']}/api/tags"
         response = requests.get(url)
         response.raise_for_status()
-        print("✅ Connected to Ollama server successfully! Here's some info:")
-        print(json.dumps(response.json(), indent=2))
+        print("✅ Connected to Ollama server successfully!")
+        
+        # Check if configured model is available
+        models = response.json().get('models', [])
+        model_names = [m.get('name') for m in models]
+        if config['model'] in model_names:
+            print(f"✅ Configured model '{config['model']}' is available")
+        else:
+            print(f"⚠️ Warning: Configured model '{config['model']}' not found in available models:")
+            print("   Available models:", ", ".join(model_names))
+            
     except requests.RequestException as e:
         print("❌ Error connecting to Ollama server. Details:")
         print(e)
         sys.exit(1)
-    print("🩺 Doctor check completed. Everything looks good!")
+    
+    print("\n🩺 Doctor check completed!")
 
 def main():
     parser = argparse.ArgumentParser(
