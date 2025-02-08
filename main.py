@@ -50,6 +50,8 @@ def generate_commit_message_http(diff, config):
 You are an assistant that writes commit messages following the Conventional Commits specification.
 Based on the following diff of staged changes, generate a clear, concise commit message.
 Be sure to use one of the following prefixes as appropriate: "feat:", "fix:", "docs:", "style:", "refactor:", "test:", or "chore:".
+IMPORTANT: Respond ONLY with the commit message text, without any markdown formatting, code blocks, or backticks.
+The message should be a single line without any wrapping or additional formatting.
 
 Diff:
 {diff}
@@ -68,8 +70,14 @@ Commit message:
         response.raise_for_status()
         # Parse the JSON response
         result = response.json()
-        # Extract just the response field
+        # Extract just the response field and clean it up
         commit_message = result.get('response', '').strip()
+        # Remove markdown code blocks if present
+        commit_message = commit_message.strip('`')
+        # Remove any 'markdown' or other language specifiers that might appear
+        if '\n' in commit_message:
+            commit_message = commit_message.split('\n', 1)[1]
+        commit_message = commit_message.strip()
         if not commit_message:
             raise ValueError("Empty response from Ollama")
         print("✅ Commit message generated!")
