@@ -59,6 +59,17 @@ source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
+# deactivate
+deactivate
+
+# Choose one of the method
+
+# On macOS/Linux:
+sudo pip install .
+
+# Or on Windows (in admin PowerShell):
+pip install .
+
 # Install in editable mode
 pip install --editable .
 ```

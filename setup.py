@@ -16,11 +16,11 @@ setup(
     author="@atom2ueki",
     description="CommitBuddy - Your AI-Powered Git Commit Assistant",
     long_description="""
-    CommitBuddy is an AI-powered Git commit message generator that uses Ollama 
+    CommitBuddy is an AI-powered Git commit message generator that uses Ollama
     to create conventional commit messages based on your staged changes.
     """,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/commitbuddy",
+    url="https://github.com/atom2ueki/commitbuddy",
     classifiers=[
         'Programming Language :: Python :: 3',
         'Environment :: Console',
