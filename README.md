@@ -1,128 +1,119 @@
-# CommitBuddy - 😃 Your AI-Powered Git Commit Assistant 🤖
+# CommitBuddy 🤖
 
-CommitBuddy is a command-line tool that generates semantic commit messages using an AI assistant powered by the Ollama CLI. With a fun, interactive, and step-by-step process, CommitBuddy helps you craft clear, conventional commit messages while adding a bit of humor to your Git workflow.
+Your AI-Powered Git Commit Assistant 🚀
 
-## Preview
+[![Release](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml/badge.svg)](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml)
+[![Python Version](https://img.shields.io/badge/python-3.6%2B-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-```bash
-commitbuddy doctor
-```
+## 📖 Overview
 
-![demo1 image](screenshots/demo1.png)
+CommitBuddy is an intelligent command-line tool that revolutionizes your Git workflow by generating semantic commit messages using AI. Powered by the Ollama CLI, it provides a fun, interactive, and step-by-step process to craft clear, conventional commit messages.
 
-```bash
-commitbuddy generate
-```
+## ✨ Key Features
 
-![demo2 image](screenshots/demo2.png)
+### 🎯 Smart Commit Generation
+- AI-powered semantic commit message generation
+- Conventional commit format compliance
+- Context-aware suggestions based on your changes
 
-## Features
+### 🔄 Interactive Workflow
+- **Step-by-Step Process**: Guided commit creation with progress indicators
+- **Multiple Options**:
+  - ✅ Accept & commit changes
+  - 🔄 Regenerate commit message
+  - ❌ Abort process
+- **Real-time Feedback**: Clear status updates and error messages
 
-- **Step-by-Step Process:**  
-  Follow along as CommitBuddy loads your configuration, retrieves staged changes, generates an AI-powered commit message, and (optionally) commits the changes—all with fun emojis and informative messages.
+### 🔍 Built-in Diagnostics
+- Configuration verification
+- Git installation check
+- Ollama server connectivity test
+- Model availability confirmation
 
-- **Interactive Options:**  
-  After generating a commit message, choose from:
-  - **Y**: Accept & commit the changes.
-  - **R**: Regenerate a new commit message.
-  - **N**: Abort the commit process.
+## 🚀 Getting Started
 
-- **Diagnostic Check:**  
-  The `doctor` command verifies your configuration, confirms Git installation, and tests connectivity to your Ollama server.
-
-## Requirements
+### Prerequisites
 
 - Python 3.6 or higher
-- [Git](https://git-scm.com/) (your project must be under Git version control)
+- Git (initialized repository)
 - [Ollama](https://ollama.ai/) installed and running
 
-## Installation
+### Installation
 
-### For Users
-
+#### For Users
 ```bash
-# Install from PyPI
 pip install commit-buddy
 ```
 
-### For Developers
-
-If you want to contribute or modify the code:
-
+#### For Developers
 ```bash
-# Clone the repository
 git clone https://github.com/atom2ueki/commitbuddy
 cd commitbuddy
-
-# Install in editable mode for development
 pip install -e .
 ```
 
-## Configuration
+## ⚙️ Configuration
 
-CommitBuddy can be configured using a `.commit-buddy.yml` file. The configuration file is searched for in the following locations (in order of priority):
+CommitBuddy uses a `.commit-buddy.yml` configuration file with the following search priority:
 
-1. Home directory: `~/.commit-buddy.yml`
+1. Current project directory
+2. Home directory (`~/.commit-buddy.yml`)
 
-### Example Configuration
-
-Create a `.commit-buddy.yml` file in your home directory or project directory:
-
+### Sample Configuration
 ```yaml
-# Model configuration
-model: qwen:14b              # The Ollama model to use
+# Model settings
+model: qwen:14b              # Ollama model selection
 ollamaIp: localhost:11434    # Ollama server address
 ```
 
-If no configuration file is found, CommitBuddy will use these default settings.
+## 🎮 Usage Guide
 
-## Usage
-
-### Generate a Commit Message
-
+### Generate Commit Message
 ```bash
 commitbuddy generate
 ```
 
-When you run this command, you'll see progress messages like:
+The process follows these steps:
+1. 🔍 Loading configuration
+2. 📄 Retrieving staged changes
+3. 🤖 Generating AI commit message
+4. 🎯 Presenting options
+5. 🚀 Committing changes (if accepted)
 
-- **Step 1/5:** Loading configuration (🔍)
-- **Step 2/5:** Retrieving staged changes (📄)
-- **Step 3/5:** Generating commit message with AI assistance (🤖)
-- **Step 5/5:** Committing changes (🚀)
-
-After the commit message is generated, you'll be prompted:
-
+### Interactive Options
 ```
-What do you want to do next? Choose an option:
+What would you like to do?
 👉 [Y] Accept & commit
-👉 [R] Regenerate commit message
+👉 [R] Regenerate message
 👉 [N] Abort
 Your choice (Y/R/N):
 ```
 
-### Run Diagnostic Check
-
-To verify your setup and configuration:
-
+### Run Diagnostics
 ```bash
 commitbuddy doctor
 ```
 
-This will check:
-- Configuration status and location
-- Git installation
-- Ollama server connectivity
-- Model availability
+Checks performed:
+- ✅ Configuration validation
+- ✅ Git installation verification
+- ✅ Ollama server connection
+- ✅ Model availability
 
-## License
+## 🤝 Contributing
 
-This project is licensed under the MIT License.
+We welcome contributions! Whether it's bug fixes, feature additions, or documentation improvements, please feel free to:
 
-## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Submit a Pull Request
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Enjoy your interactive, AI-powered commit message generator—**CommitBuddy**! 🚀😄
+[Report Bug](https://github.com/atom2ueki/commitbuddy/issues) · [Request Feature](https://github.com/atom2ueki/commitbuddy/issues)
