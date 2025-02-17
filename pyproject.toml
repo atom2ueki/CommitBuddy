@@ -40,3 +40,5 @@ version_files = [
 # Optional: Add changelog settings
 changelog_file = "CHANGELOG.md"
 changelog_incremental = true # Append to existing changlog.
+update_changelog_on_bump = true
+annotated_tag = true
