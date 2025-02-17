@@ -1,4 +1,4 @@
-# CommitBuddy - Your AI-Powered Git Commit Assistant
+# CommitBuddy - 😃 Your AI-Powered Git Commit Assistant 🤖
 
 CommitBuddy is a command-line tool that generates semantic commit messages using an AI assistant powered by the Ollama CLI. With a fun, interactive, and step-by-step process, CommitBuddy helps you craft clear, conventional commit messages while adding a bit of humor to your Git workflow.
 
@@ -62,9 +62,7 @@ pip install -e .
 
 CommitBuddy can be configured using a `.commit-buddy.yml` file. The configuration file is searched for in the following locations (in order of priority):
 
-1. Current directory: `./.commit-buddy.yml`
-2. Home directory: `~/.commit-buddy.yml`
-3. XDG config directory: `~/.config/commit-buddy/config.yml`
+1. Home directory: `~/.commit-buddy.yml`
 
 ### Example Configuration
 
@@ -119,7 +117,7 @@ This will check:
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
 
 ## Contributing
 
