@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "commit-buddy"
-version = "0.2.0"
+version = "0.1.0"
 description = "AI-Powered Git Commit Assistant"
 readme = "README.md"
 authors = [{name = "@atom2ueki"}]
@@ -31,7 +31,7 @@ Repository = "https://github.com/atom2ueki/commitbuddy.git"
 
 [tool.commitizen]
 name = "cz_conventional_commits"  # Or your chosen commitizen style
-version = "0.2.0"  # Your current version.  IMPORTANT: Set this correctly!
+version = "0.1.0"  # Your current version.  IMPORTANT: Set this correctly!
 version_scheme = "semver"
 tag_format = "$version"  # No 'v' prefix, as you prefer.
 version_files = [
