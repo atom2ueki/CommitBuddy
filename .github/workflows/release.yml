@@ -50,12 +50,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
 
       - name: Bump version and create tag
-        run: |
-          cz bump --changelog --yes
+        run: cz bump --changelog --yes
 
       - name: Push changes and tags
-        run: |
-          git push origin main --follow-tags
+        run: git push origin main --follow-tags
 
   publish-to-testpypi:
     name: Publish to TestPyPI
