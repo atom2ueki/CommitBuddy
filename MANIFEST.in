@@ -1,0 +1,23 @@
+# Include license and readme
+include LICENSE
+include README.md
+
+# Include all source files
+recursive-include src/commit_buddy * # or recursive-include commit_buddy * if in root
+
+# Include configuration files
+include.commit-buddy.yml  # Use "include" for single files in root
+
+# Exclude
+exclude screenshots
+
+# Exclude bytecode and cache (Good!)
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude *.egg
+global-exclude *.egg-info
+global-exclude.git*
+global-exclude.pytest_cache
+global-exclude.coverage
+global-exclude htmlcov
