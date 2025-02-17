@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install .
+
+  create-release-tag:
+    name: Create Release Tag
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install Commitizen
+        run: pip install commitizen
+
+      - name: Bump version and create tag
+        run: |
+          cz bump --changelog --yes
+
+      - name: Push changes and tags
+        run: |
+          git push origin main --follow-tags
+
+  publish-to-testpypi:
+    name: Publish to TestPyPI
+    needs: create-release-tag
+    runs-on: ubuntu-latest
+    environment: testpypi
+    if: |
+      github.ref_type == 'tag' &&
+      (contains(github.ref_name, '-alpha.') ||
+       contains(github.ref_name, '-beta.') ||
+       contains(github.ref_name, '-rc.'))
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to TestPyPI
+        run: |
+          twine upload --repository testpypi dist/* \
+            --username ${{ secrets.PYPI_USER_NAME }} \
+            --password ${{ secrets.PYPI_API_TOKEN }}
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    needs: create-release-tag
+    runs-on: ubuntu-latest
+    environment: pypi
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to PyPI
+        run: |
+          twine upload dist/* \
+            --username ${{ secrets.PYPI_USER_NAME }} \
+            --password ${{ secrets.PYPI_API_TOKEN }}
