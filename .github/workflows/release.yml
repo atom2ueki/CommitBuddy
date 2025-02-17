@@ -48,6 +48,12 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
+          git config --global push.followTags true
 
       - name: Bump version and create tag
-        run: cz bump --changelog --yes
+        run: cz bump --yes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changes and tags
+        run: git push origin main --follow-tags
