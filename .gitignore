@@ -1,57 +1,53 @@
-# macOS specific files
+# macOS system files
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon?
 ._*
-
-# Thumbnails
-._*
 .Spotlight-V100
 .Trashes
-
-# Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
-.Spotlight-V100
 .TemporaryItems
-.Trashes
 .VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Python compiled files
-*.pyc
-*.pyo
-*.pyd
+# Python
 __pycache__/
-
-# Virtual environment directories
-venv/
-env/
-ENV/
-.env/
+*.py[cod]
+*$py.class
+*.so
 
 # Distribution / packaging
-build/
-develop-eggs/
 dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+wheels/
+share/python-wheels/
+.Python
+develop-eggs/
 downloads/
 eggs/
-.eggs/
 lib/
 lib64/
 parts/
 sdist/
 var/
-*.egg-info/
 .installed.cfg
-*.egg
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Unit test / coverage reports
-htmlcov/
+# Testing and coverage
 .tox/
 .nox/
 .coverage
@@ -60,12 +56,46 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+htmlcov/
 
-# Editor directories and files
-.vscode/
+# Development tools and IDEs
+# PyCharm
 .idea/
+*.iml
+*.iws
+.idea_modules/
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Sublime Text
 *.sublime-workspace
 *.sublime-project
 
-# PyCharm
-*.iml
+# Logs and databases
+*.log
+*.sqlite
+*.db
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environment configurations
+.env
+.envrc
+.direnv
+
+# Project specific
+commit-buddy.yml
+.commit-buddy.yml
+
+# Temporary files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

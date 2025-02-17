@@ -38,40 +38,24 @@ commitbuddy generate
 
 ## Installation
 
-It is **highly recommended** to use a virtual environment to manage dependencies when building and using CommitBuddy.
+### For Users
 
-### Quick Start (Development)
+```bash
+# Install from PyPI
+pip install commit-buddy
+```
 
-If you just want to try it out without installing as a CLI tool:
+### For Developers
+
+If you want to contribute or modify the code:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/commitbuddy
+git clone https://github.com/atom2ueki/commitbuddy
 cd commitbuddy
 
-# Make the script executable
-chmod +x main.py 
-
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# deactivate
-deactivate
-
-# Choose one of the method
-
-# On macOS/Linux:
-sudo pip install .
-
-# Or on Windows (in admin PowerShell):
-pip install .
-
-# Install in editable mode
-pip install --editable .
+# Install in editable mode for development
+pip install -e .
 ```
 
 ## Configuration
@@ -98,14 +82,8 @@ If no configuration file is found, CommitBuddy will use these default settings.
 
 ### Generate a Commit Message
 
-This command generates a semantic commit message from your staged Git changes:
-
 ```bash
-# If installed via pip install -e .
 commitbuddy generate
-
-# Or using the script directly
-./main.py generate
 ```
 
 When you run this command, you'll see progress messages like:

@@ -14,17 +14,17 @@ def get_default_config():
 
 def load_config():
     print("🔍 [Step 1/5] Loading configuration...")
-    
+
     # Define config file locations in priority order
     config_locations = [
         os.path.join(os.getcwd(), '.commit-buddy.yml'),                    # Current directory
         os.path.join(os.path.expanduser('~'), '.commit-buddy.yml'),          # Home directory
         os.path.join(os.path.expanduser('~'), '.config', 'commit-buddy', 'config.yml')  # XDG config directory
     ]
-    
+
     config = get_default_config()
     config_loaded = False
-    
+
     for config_path in config_locations:
         if os.path.exists(config_path):
             try:
@@ -38,7 +38,7 @@ def load_config():
             except Exception as e:
                 print(f"⚠️ Error reading {config_path}: {e}")
                 continue
-    
+
     if not config_loaded:
         print("ℹ️ No configuration file found. Using default settings:")
         print(f"   - Model: {config['model']}")
@@ -49,7 +49,7 @@ def load_config():
             "model": "qwen:14b",
             "ollamaIp": "localhost:11434"
         }, default_flow_style=False))
-    
+
     return config
 
 def get_staged_diff():
@@ -73,7 +73,7 @@ def generate_commit_message_http(diff, config):
     print("🤖 [Step 3/5] Generating commit message via HTTP...")
     url = f"http://{config['ollamaIp']}/api/generate"
     headers = {"Content-Type": "application/json"}
-    
+
     # Updated prompt as specified
     prompt = "You are a commit message generator that strictly follows the Conventional Commits specification (https://www.conventionalcommits.org/).\n"
     prompt += "Generate a commit message for the following changes using EXACTLY this format: type: description\n"
@@ -91,7 +91,7 @@ def generate_commit_message_http(diff, config):
         "prompt": prompt,
         "stream": False
     }
-    
+
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
@@ -129,7 +129,7 @@ def commit_changes(commit_message):
 def generate_command():
     config = load_config()
     diff = get_staged_diff()
-    
+
     while True:
         commit_message = generate_commit_message_http(diff, config)
         print("\n📣 Here is the generated commit message:")
@@ -140,7 +140,7 @@ def generate_command():
         print("👉 [Y] Accept & commit")
         print("👉 [R] Regenerate commit message")
         print("👉 [N] Abort")
-        
+
         choice = prompt_user("Your choice (Y/R/N): ").strip().lower()
         if choice == 'y':
             commit_changes(commit_message)
@@ -156,13 +156,13 @@ def generate_command():
 
 def doctor_command():
     print("🩺 Running doctor check for CommitBuddy...")
-    
+
     # Load and display configuration
     config = load_config()
     print("\n📋 Current Configuration:")
     print(f"   Model: {config['model']}")
     print(f"   Ollama IP: {config['ollamaIp']}")
-    
+
     # Check Git installation
     print("\n🔍 Checking Git installation...")
     try:
@@ -171,7 +171,7 @@ def doctor_command():
     except (subprocess.CalledProcessError, FileNotFoundError):
         print("❌ Git not found! Please install Git to use CommitBuddy.")
         sys.exit(1)
-    
+
     # Check Ollama connectivity
     print("\n🌐 Checking connectivity to Ollama server...")
     try:
@@ -179,7 +179,7 @@ def doctor_command():
         response = requests.get(url)
         response.raise_for_status()
         print("✅ Connected to Ollama server successfully!")
-        
+
         # Check if configured model is available
         models = response.json().get('models', [])
         model_names = [m.get('name') for m in models]
@@ -188,12 +188,12 @@ def doctor_command():
         else:
             print(f"⚠️ Warning: Configured model '{config['model']}' not found in available models:")
             print("   Available models:", ", ".join(model_names))
-            
+
     except requests.RequestException as e:
         print("❌ Error connecting to Ollama server. Details:")
         print(e)
         sys.exit(1)
-    
+
     print("\n🩺 Doctor check completed!")
 
 def main():
@@ -203,7 +203,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("generate", help="Generate commit message and optionally commit changes")
     subparsers.add_parser("doctor", help="Run a diagnostic check on the tool and Ollama connectivity")
-    
+
     args = parser.parse_args()
     if args.command == "generate":
         generate_command()
