@@ -36,6 +36,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Unset Git Config (Precautionary)
+        run: |
+          git config --unset user.name
+          git config --unset user.email
+          # Optional: git config --list # Uncomment to debug Git config
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
