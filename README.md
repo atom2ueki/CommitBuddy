@@ -1,119 +1,144 @@
 # CommitBuddy 🤖
 
-Your AI-Powered Git Commit Assistant 🚀
+🚀 An AI-powered Git commit assistant that uses LangChain and local LLMs to analyze your code changes, split them into logical units, and generate semantic commit messages 🚀
 
 [![Release](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml/badge.svg)](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml)
 [![Python Version](https://img.shields.io/badge/python-3.6%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## 📖 Overview
+## Features
 
-CommitBuddy is an intelligent command-line tool that revolutionizes your Git workflow by generating semantic commit messages using AI. Powered by the Ollama CLI, it provides a fun, interactive, and step-by-step process to craft clear, conventional commit messages.
+- Analyzes git diffs to understand code changes
+- Splits changes into logical units for atomic commits
+- Generates conventional commit messages
+- Works with local LLM models via llama-cpp-python
+- Uses LangChain for sophisticated LLM prompting and chaining
+- Fully configurable via yaml file
 
-## ✨ Key Features
+## Architecture
 
-### 🎯 Smart Commit Generation
-- AI-powered semantic commit message generation
-- Conventional commit format compliance
-- Context-aware suggestions based on your changes
+Commit Buddy integrates several key technologies:
 
-### 🔄 Interactive Workflow
-- **Step-by-Step Process**: Guided commit creation with progress indicators
-- **Multiple Options**:
-  - ✅ Accept & commit changes
-  - 🔄 Regenerate commit message
-  - ❌ Abort process
-- **Real-time Feedback**: Clear status updates and error messages
+1. **LangChain:** Used to create sophisticated prompts and process chains for analyzing diffs, splitting changes, and generating commit messages
+2. **llama-cpp-python:** Powers the local LLM inference for understanding code changes
+3. **GitPython:** Handles all Git operations
+4. **Rich:** Provides beautiful terminal output
 
-### 🔍 Built-in Diagnostics
-- Configuration verification
-- Git installation check
-- Ollama server connectivity test
-- Model availability confirmation
-
-## 🚀 Getting Started
+## Installation
 
 ### Prerequisites
 
-- Python 3.6 or higher
-- Git (initialized repository)
-- [Ollama](https://ollama.ai/) installed and running
+- Python 3.9 or higher
+- Git
+- A compatible LLM model (e.g., Llama, Mistral, etc.)
 
-### Installation
+### From PyPI
 
-#### For Users
 ```bash
 pip install commit-buddy
 ```
 
-#### For Developers
+### From Source
+
 ```bash
-git clone https://github.com/atom2ueki/commitbuddy
+git clone https://github.com/atom2ueki/commitbuddy.git
 cd commitbuddy
 pip install -e .
 ```
 
-## ⚙️ Configuration
+### Optional Accelerated Backends
 
-CommitBuddy uses a `.commit-buddy.yml` configuration file with the following search priority:
+You can install Commit Buddy with hardware acceleration:
 
-1. Current project directory
-2. Home directory (`~/.commit-buddy.yml`)
+```bash
+# For Apple Silicon (Metal)
+pip install "commit-buddy[metal]" --extra-index-url https://download.pytorch.org/whl/nightly/cpu
 
-### Sample Configuration
+# For NVIDIA GPUs (CUDA)
+pip install "commit-buddy[cuda]" --extra-index-url https://download.pytorch.org/whl/cu118
+```
+
+## Configuration
+
+Commit Buddy uses a configuration file located at `~/.commitbuddy/config.yml`. A default configuration is created the first time you run the tool.
+
+You can specify a custom configuration file with the `--config` command-line option.
+
+Example configuration:
+
 ```yaml
-# Model settings
-model: qwen:14b              # Ollama model selection
-ollamaIp: localhost:11434    # Ollama server address
+# LLM settings
+model_path: ~/.commitbuddy/models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
+context_length: 8192
+temperature: 0.2
+max_tokens: 1024
+n_gpu_layers: 1
+n_batch: 512
+n_threads: 4
+
+# Git settings
+git_command: git
+auto_commit: false
+
+# LangChain settings
+chain_verbose: false
+
+# Commit message settings
+commit_types:
+  - feat
+  - fix
+  - docs
+  - style
+  - refactor
+  - perf
+  - test
+  - build
+  - ci
+  - chore
+  - revert
+
+commit_scopes:
+  - ui
+  - api
+  - db
+  - auth
 ```
 
-## 🎮 Usage Guide
+## Usage
 
-### Generate Commit Message
+### Basic Usage
+
 ```bash
-commitbuddy generate
+# Analyze staged changes and commit them
+commitbuddy
+
+# Include unstaged changes
+commitbuddy --unstaged
+
+# Only analyze changes without committing
+commitbuddy --analyze
+
+# Automatically commit without confirmation
+commitbuddy --auto-commit
 ```
 
-The process follows these steps:
-1. 🔍 Loading configuration
-2. 📄 Retrieving staged changes
-3. 🤖 Generating AI commit message
-4. 🎯 Presenting options
-5. 🚀 Committing changes (if accepted)
+### Command Line Options
 
-### Interactive Options
-```
-What would you like to do?
-👉 [Y] Accept & commit
-👉 [R] Regenerate message
-👉 [N] Abort
-Your choice (Y/R/N):
-```
+- `--config`, `-c`: Path to config file
+- `--model`, `-m`: Path to LLM model file
+- `--analyze`, `-a`: Analyze git diff without making any commits
+- `--unstaged`, `-u`: Include unstaged changes in the analysis
+- `--auto-commit`, `-ac`: Automatically commit changes without confirmation
+- `--verbose`, `-v`: Enable verbose output
 
-### Run Diagnostics
-```bash
-commitbuddy doctor
-```
+## How It Works
 
-Checks performed:
-- ✅ Configuration validation
-- ✅ Git installation verification
-- ✅ Ollama server connection
-- ✅ Model availability
+1. **Diff Analysis**: Commit Buddy analyzes your git diff to understand the changes.
+2. **Change Splitting**: It splits the changes into logical units that should be committed separately.
+3. **Commit Message Generation**: For each logical unit, it generates a semantic commit message.
+4. **Commit**: After confirmation, it commits each logical unit with its generated message.
 
-## 🤝 Contributing
+## License
 
-We welcome contributions! Whether it's bug fixes, feature additions, or documentation improvements, please feel free to:
-
-1. Fork the repository
-2. Create your feature branch
-3. Submit a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-[Report Bug](https://github.com/atom2ueki/commitbuddy/issues) · [Request Feature](https://github.com/atom2ueki/commitbuddy/issues)
+This project is licensed under the MIT License - see the LICENSE file for details.
