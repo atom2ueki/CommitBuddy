@@ -5,31 +5,13 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build Wheels
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    strategy:
+      matrix:
+        variant: [cpu, metal, cuda]
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install .
-
-  create-release-tag:
-    name: Create Release Tag
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,7 +21,90 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build commitizen
+
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep 'version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          echo "Extracted version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Install LLaMA variant - ${{ matrix.variant }}
+        run: |
+          case "${{ matrix.variant }}" in
+            cpu)
+              echo "Installing CPU version"
+              pip install .
+              ;;
+            metal)
+              echo "Installing Metal version"
+              pip install "llama-cpp-python[metal]>=0.3.5"
+              ;;
+            cuda)
+              echo "Installing CUDA version"
+              pip install "llama-cpp-python[cuda]>=0.3.4"
+              ;;
+          esac
+
+      - name: Build wheel for ${{ matrix.variant }}
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          echo "Building wheel for version $VERSION and variant ${{ matrix.variant }}"
+
+          # Build the wheel
+          python -m build
+
+          # Clear out the dist directory contents and copy to a temp directory
+          mkdir -p temp_wheels
+          cp dist/*.whl temp_wheels/
+          rm -f dist/*
+
+          # Create a properly formatted wheel name according to PEP 427
+          WHEEL_NAME="commit_buddy-${VERSION}-${{ matrix.variant }}-py3-none-any.whl"
+
+          # Move the wheel file from temp to dist with new name
+          mv temp_wheels/*.whl "dist/$WHEEL_NAME"
+
+          # Clean up
+          rm -rf temp_wheels
+
+          # Show what we've got
+          echo "Final wheel file:"
+          ls -la dist/
+
+          # List files in dist directory
+          ls -la dist/
+
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: commit-buddy-${{ steps.get_version.outputs.version }}-${{ matrix.variant }}
+          path: dist/*.whl
+
+  create-release-tag:
+    name: Create Release Tag
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
       - name: Install Commitizen
         run: pip install commitizen
@@ -48,7 +113,6 @@ jobs:
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git config --global push.followTags true
 
       - name: Bump version and create tag
         run: cz bump --yes
@@ -58,43 +122,6 @@ jobs:
       - name: Push changes and tags
         run: git push origin main --follow-tags
 
-  publish-to-testpypi:
-    name: Publish to TestPyPI
-    needs: create-release-tag
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Get all tags for versioning
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade build twine
-
-      - name: Build package
-        run: python -m build
-
-      - name: Check distribution
-        run: twine check dist/*
-
-      - name: Publish to TestPyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-          TWINE_REPOSITORY: testpypi
-        run: |
-          twine upload --verbose dist/*
-
   publish-to-pypi:
     name: Publish to PyPI
     needs: create-release-tag
@@ -102,32 +129,28 @@ jobs:
     environment: pypi
     permissions:
       id-token: write
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Download built wheels
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 0
+          path: dist-download
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install build tools
+      - name: Prepare distribution directory
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade build twine
+          mkdir -p dist
+          find dist-download -type f -name "*.whl" -exec cp {} dist/ \;
+          ls -la dist/
 
-      - name: Build package
-        run: python -m build
+      - name: Install Twine
+        run: python -m pip install --upgrade twine
 
       - name: Check distribution
         run: twine check dist/*
 
-      - name: Publish to PyPI
+      - name: Publish wheels to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-          TWINE_REPOSITORY: pypi
         run: |
-          twine upload --verbose dist/*
+          twine upload --repository pypi dist/*

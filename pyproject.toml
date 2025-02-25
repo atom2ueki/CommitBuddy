@@ -5,21 +5,48 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "commit-buddy"
 version = "0.2.0"
-description = "AI-Powered Git Commit Assistant"
+description = "AI-Powered Git Commit Assistant with LangChain"
 readme = "README.md"
 authors = [{name = "@atom2ueki"}]
 license = {text = "MIT"}
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Version Control :: Git",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
 ]
-keywords = ["git", "commit", "ai", "ollama"]
-requires-python = ">=3.6"
+keywords = ["git", "commit", "ai", "llm", "llama-cpp", "langchain"]
+requires-python = ">=3.9"
 dependencies = [
-    "requests>=2.31.0",
-    "PyYAML>=6.0.1",
+    "llama-cpp-python>=0.3.2",  # Default to CPU version
+    "langchain>=0.1.17",
+    "langchain-community>=0.0.10",
+    "gitpython>=3.1.40",
+    "pyyaml>=6.0.1",
+    "rich>=13.4.2",
+    "pydantic>=2.4.2"
+]
+
+[project.optional-dependencies]
+metal = ["llama-cpp-python[metal]>=0.3.5"]  # Optional Metal version
+cuda = ["llama-cpp-python[cuda]>=0.3.4"]    # Optional CUDA version
+
+# Development dependencies
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "isort>=5.12.0",
+    "mypy>=1.4.1",
+    "ruff>=0.0.282",
+    "pre-commit>=3.3.3",
+    "commitizen>=3.5.3",
 ]
 
 [project.scripts]
@@ -28,19 +55,60 @@ commitbuddy = "commit_buddy.main:main"
 [project.urls]
 Homepage = "https://github.com/atom2ueki/commitbuddy"
 Repository = "https://github.com/atom2ueki/commitbuddy.git"
+Documentation = "https://github.com/atom2ueki/commitbuddy/blob/main/README.md"
+"Bug Tracker" = "https://github.com/atom2ueki/commitbuddy/issues"
+
+# Setuptools configuration
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Development tools configuration
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+select = ["E", "F", "B", "I"]
+ignore = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+pythonpath = ["src"]
 
 [tool.commitizen]
-name = "cz_conventional_commits"  # Or your chosen commitizen style
-version = "0.2.0"  # Your current version.  IMPORTANT: Set this correctly!
+name = "cz_conventional_commits"
+version = "0.2.0"
 version_scheme = "semver"
-tag_format = "$version"  # No 'v' prefix, as you prefer.
+tag_format = "$version"
 version_files = [
-    "src/commit_buddy/__init__.py:__version__",  # Update __init__.py
-    "pyproject.toml:version"  # Update pyproject.toml
+    "src/commit_buddy/__init__.py:__version__",
+    "pyproject.toml:version"
 ]
-# Optional: Add changelog settings
 changelog_file = "CHANGELOG.md"
-changelog_incremental = true # Append to existing changlog.
+changelog_incremental = true
 update_changelog_on_bump = true
 annotated_tag = true
 bump_message = "release $current_version → $new_version [skip-ci]"

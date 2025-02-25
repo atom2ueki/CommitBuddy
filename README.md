@@ -1,119 +1,177 @@
-# CommitBuddy 🤖
+# CommitBuddy
 
-Your AI-Powered Git Commit Assistant 🚀
+> 🚀 AI-Powered Git Commit Assistant with LangChain
 
-[![Release](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml/badge.svg)](https://github.com/atom2ueki/CommitBuddy/actions/workflows/release.yml)
-[![Python Version](https://img.shields.io/badge/python-3.6%2B-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PyPI version](https://badge.fury.io/py/commit-buddy.svg)](https://badge.fury.io/py/commit-buddy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 📖 Overview
+CommitBuddy is an AI-powered assistant that analyzes your code changes and generates meaningful commit messages following conventional commit standards. It analyzes git diffs, breaks changes into logical units, and creates semantic commit messages that clearly describe what changed and why.
 
-CommitBuddy is an intelligent command-line tool that revolutionizes your Git workflow by generating semantic commit messages using AI. Powered by the Ollama CLI, it provides a fun, interactive, and step-by-step process to craft clear, conventional commit messages.
+## Features
 
-## ✨ Key Features
+- 🔍 **Intelligent Analysis**: Analyzes git diffs to understand code changes
+- 🧩 **Logical Grouping**: Splits changes into logical units for atomic commits
+- 💬 **Semantic Messages**: Generates commit messages in conventional format
+- 🔄 **Multi-Stage Workflow**: Option for full analysis or quick generation
+- 🚀 **GPU Acceleration**: Support for Metal (Apple Silicon) and CUDA (NVIDIA)
 
-### 🎯 Smart Commit Generation
-- AI-powered semantic commit message generation
-- Conventional commit format compliance
-- Context-aware suggestions based on your changes
+## Installation
 
-### 🔄 Interactive Workflow
-- **Step-by-Step Process**: Guided commit creation with progress indicators
-- **Multiple Options**:
-  - ✅ Accept & commit changes
-  - 🔄 Regenerate commit message
-  - ❌ Abort process
-- **Real-time Feedback**: Clear status updates and error messages
+### Basic Installation (CPU)
 
-### 🔍 Built-in Diagnostics
-- Configuration verification
-- Git installation check
-- Ollama server connectivity test
-- Model availability confirmation
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Python 3.6 or higher
-- Git (initialized repository)
-- [Ollama](https://ollama.ai/) installed and running
-
-### Installation
-
-#### For Users
 ```bash
 pip install commit-buddy
 ```
 
-#### For Developers
+### With GPU Acceleration
+
+For Apple Silicon (Metal):
 ```bash
-git clone https://github.com/atom2ueki/commitbuddy
-cd commitbuddy
-pip install -e .
+pip install "commit-buddy[metal]"
 ```
 
-## ⚙️ Configuration
+For NVIDIA GPUs (CUDA):
+```bash
+pip install "commit-buddy[cuda]"
+```
 
-CommitBuddy uses a `.commit-buddy.yml` configuration file with the following search priority:
+## Setup
 
-1. Current project directory
-2. Home directory (`~/.commit-buddy.yml`)
+1. Download an LLM model file (GGUF format) for local inference
+2. Place it in `~/.commitbuddy/models/`
+3. Run with `commitbuddy --show-config` to check your configuration
 
-### Sample Configuration
+## Usage
+
+### Basic Usage
+
+```bash
+# For already staged changes (git add)
+commitbuddy
+
+# For unstaged changes
+commitbuddy --unstaged
+```
+
+### Command Line Options
+
+```
+usage: commitbuddy [-h] [--config CONFIG] [--model MODEL] [--analyze] [--unstaged] [--auto-commit] [--verbose] [--show-config] [--gpu-layers GPU_LAYERS]
+
+AI-Powered Git Commit Assistant with LangChain
+
+options:
+  -h, --help            show this help message and exit
+  --config CONFIG, -c CONFIG
+                        Path to config file
+  --model MODEL, -m MODEL
+                        Path to LLM model file
+  --analyze, -a         Analyze git diff without making any commits
+  --unstaged, -u        Include unstaged changes in the analysis
+  --auto-commit, -ac    Automatically commit changes without confirmation
+  --verbose, -v         Enable verbose output
+  --show-config         Show configuration and exit
+  --gpu-layers GPU_LAYERS, -g GPU_LAYERS
+                        Number of layers to run on GPU (for Metal/CUDA acceleration)
+```
+
+## Configuration
+
+CommitBuddy creates a default configuration file at `~/.commitbuddy/config.yaml`. You can customize this file to change settings:
+
 ```yaml
-# Model settings
-model: qwen:14b              # Ollama model selection
-ollamaIp: localhost:11434    # Ollama server address
+# LLM settings
+model_path: ~/.commitbuddy/models/your-model.gguf
+context_length: 4096
+temperature: 0.2
+max_tokens: 1024
+n_gpu_layers: 1
+n_batch: 512
+n_threads: 4
+
+# Git settings
+git_command: git
+auto_commit: false
+
+# LangChain settings
+chain_verbose: false
+
+# Commit message settings
+commit_types:
+  - feat
+  - fix
+  - docs
+  - style
+  - refactor
+  - perf
+  - test
+  - build
+  - ci
+  - chore
+  - revert
+commit_scopes: []
 ```
 
-## 🎮 Usage Guide
+## Recommended Models
 
-### Generate Commit Message
+CommitBuddy works best with coding-specialized language models. Here are some recommended options:
+
+- [Qwen2.5-7B-Coder-GGUF](https://huggingface.co/Qwen/Qwen2.5-7B-Coder-GGUF)
+- [CodeLlama-7B-Instruct-GGUF](https://huggingface.co/TheBloke/CodeLlama-7B-Instruct-GGUF)
+- [WizardCoder-Python-13B-GGUF](https://huggingface.co/TheBloke/WizardCoder-Python-13B-V1.0-GGUF)
+
+Download the quantized model (Q4_K_M recommended for good balance of speed/quality) and place it in your `~/.commitbuddy/models/` directory.
+
+## Examples
+
+### Analyzing Staged Changes
+
 ```bash
-commitbuddy generate
+$ git add src/core/utils.py src/api/routes.py
+$ commitbuddy
 ```
 
-The process follows these steps:
-1. 🔍 Loading configuration
-2. 📄 Retrieving staged changes
-3. 🤖 Generating AI commit message
-4. 🎯 Presenting options
-5. 🚀 Committing changes (if accepted)
+![Example Output](./assets/example-output.png)
 
-### Interactive Options
-```
-What would you like to do?
-👉 [Y] Accept & commit
-👉 [R] Regenerate message
-👉 [N] Abort
-Your choice (Y/R/N):
-```
+### Analyzing Unstaged Changes
 
-### Run Diagnostics
 ```bash
-commitbuddy doctor
+$ commitbuddy --unstaged
 ```
 
-Checks performed:
-- ✅ Configuration validation
-- ✅ Git installation verification
-- ✅ Ollama server connection
-- ✅ Model availability
+### Analyzing Without Committing
 
-## 🤝 Contributing
+```bash
+$ commitbuddy --analyze
+```
 
-We welcome contributions! Whether it's bug fixes, feature additions, or documentation improvements, please feel free to:
+## How It Works
+
+CommitBuddy uses a multi-stage LangChain pipeline:
+
+1. **Diff Analysis**: Analyzes git diffs to understand what changed
+2. **Change Splitting**: Groups related files into logical units
+3. **Message Generation**: Creates conventional commit messages
+
+Each stage feeds into the next, creating a comprehensive analysis that results in meaningful commit messages.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create your feature branch
-3. Submit a Pull Request
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
----
+## Acknowledgments
 
-[Report Bug](https://github.com/atom2ueki/commitbuddy/issues) · [Request Feature](https://github.com/atom2ueki/commitbuddy/issues)
+- [LangChain](https://github.com/langchain-ai/langchain) for the LLM integration
+- [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) for local inference
+- [Rich](https://github.com/Textualize/rich) for terminal formatting
+- [GitPython](https://github.com/gitpython-developers/GitPython) for git operations
