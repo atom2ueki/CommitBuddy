@@ -113,12 +113,11 @@ jobs:
       - name: Build wheel for ${{ matrix.variant }}
         run: |
           VERSION=${{ steps.get_version.outputs.version }}
-          echo "Building wheel for version $VERSION and variant ${{ matrix.variant }}"
+          echo "Building wheel for version $VERSION"
 
-          # Build the wheel
+          # Build a single standard wheel instead of trying to create variant-specific wheels
           python -m build
 
-          # Show the built wheel
           echo "Built wheel:"
           ls -la dist/
 
@@ -143,7 +142,7 @@ jobs:
       - name: Upload wheel as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: commit-buddy-${{ steps.get_version.outputs.version }}-${{ matrix.variant }}
+          name: commit-buddy-${{ steps.get_version.outputs.version }}
           path: dist/*.whl
 
   publish-to-pypi:
