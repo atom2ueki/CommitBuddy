@@ -4,13 +4,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: Build Wheels
+  create-release-tag:
+    name: Create Release Tag
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        variant: [cpu, metal, cuda]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    outputs:
+      new_version: ${{ steps.get_version.outputs.version }}
+      has_changes: ${{ steps.get_version.outputs.has_changes }}
 
     steps:
       - name: Checkout code
@@ -23,18 +25,72 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Commitizen
+        run: pip install commitizen
+
+      - name: Get next version (dry-run)
+        id: get_version
+        run: |
+          CZ_OUTPUT=$(cz bump --dry-run)
+          echo "CZ Output: $CZ_OUTPUT"
+
+          # Looking for pattern "release X.Y.Z → A.B.C" and extracting A.B.C
+          if echo "$CZ_OUTPUT" | grep -q 'release [0-9.]\+ → [0-9.]\+'; then
+            NEXT_VERSION=$(echo "$CZ_OUTPUT" | grep -oP 'release [0-9.]+\s→\s\K[0-9.]+')
+            echo "Extracted next version: $NEXT_VERSION"
+            echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "No version bump needed - no significant changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Bump version and create tag
+        if: steps.get_version.outputs.has_changes == 'true'
+        run: cz bump --yes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changes and tags
+        if: steps.get_version.outputs.has_changes == 'true'
+        run: git push origin main --follow-tags
+
+  build:
+    name: Build Wheels
+    needs: create-release-tag
+    if: needs.create-release-tag.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: [cpu, metal, cuda]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main # Use the main branch with the updated version
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build commitizen
+          pip install build
 
-      - name: Get next version from Commitizen (dry-run)
+      - name: Get version from package
         id: get_version
         run: |
-          CZ_OUTPUT=$(cz bump --dry-run --files-only)
-          echo "CZ Output: $CZ_OUTPUT"
-          VERSION=$(echo "$CZ_OUTPUT" | grep -oP 'Bump version: \K[0-9]+\.[0-9]+\.[0-9]+' || echo "0.2.0")
-          echo "Extracted version: $VERSION"
+          VERSION=$(grep 'version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          echo "Current version from pyproject.toml: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Install LLaMA variant - ${{ matrix.variant }}
@@ -62,14 +118,16 @@ jobs:
           # Build the wheel
           python -m build
 
-          # Clear out the dist directory contents and copy to a temp directory
+          # Show the built wheel
+          echo "Built wheel:"
+          ls -la dist/
+
+          # PEP 427 compliant wheel naming for variants
           mkdir -p temp_wheels
           cp dist/*.whl temp_wheels/
           rm -f dist/*
 
-          # Create a properly formatted wheel name according to PEP 427
-          # Format should be: {distribution}-{version}-{python tag}-{abi tag}-{platform tag}.whl
-          # The variant should be part of the distribution name, not a build tag
+          # Create a properly formatted wheel name with variant as part of distribution
           WHEEL_NAME="commit_buddy_${{ matrix.variant }}-${VERSION}-py3-none-any.whl"
 
           # Move the wheel file from temp to dist with new name
@@ -78,11 +136,8 @@ jobs:
           # Clean up
           rm -rf temp_wheels
 
-          # Show what we've got
+          # Show final result
           echo "Final wheel file:"
-          ls -la dist/
-
-          # List files in dist directory
           ls -la dist/
 
       - name: Upload wheel as artifact
@@ -91,44 +146,10 @@ jobs:
           name: commit-buddy-${{ steps.get_version.outputs.version }}-${{ matrix.variant }}
           path: dist/*.whl
 
-  create-release-tag:
-    name: Create Release Tag
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Install Commitizen
-        run: pip install commitizen
-
-      - name: Configure Git
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-
-      - name: Bump version and create tag
-        run: cz bump --yes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push changes and tags
-        run: git push origin main --follow-tags
-
   publish-to-pypi:
     name: Publish to PyPI
-    needs: create-release-tag
+    needs: [create-release-tag, build]
+    if: needs.create-release-tag.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -144,6 +165,7 @@ jobs:
         run: |
           mkdir -p dist
           find dist-download -type f -name "*.whl" -exec cp {} dist/ \;
+          echo "Wheels to be published:"
           ls -la dist/
 
       - name: Install Twine
