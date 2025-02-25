@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "commit-buddy"
-version = "0.3.0"
+version = "0.1.0"
 description = "AI-Powered Git Commit Assistant with LangChain"
 readme = "README.md"
 authors = [{name = "@atom2ueki"}]
@@ -100,7 +100,7 @@ pythonpath = ["src"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.3.0"
+version = "0.2.0"
 version_scheme = "semver"
 tag_format = "$version"
 version_files = [

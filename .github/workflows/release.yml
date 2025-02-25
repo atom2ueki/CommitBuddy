@@ -28,10 +28,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install build commitizen
 
-      - name: Extract version from pyproject.toml
+      - name: Get next version from Commitizen (dry-run)
         id: get_version
         run: |
-          VERSION=$(grep 'version = ' pyproject.toml | head -1 | cut -d'"' -f2)
+          CZ_OUTPUT=$(cz bump --dry-run --files-only)
+          echo "CZ Output: $CZ_OUTPUT"
+          VERSION=$(echo "$CZ_OUTPUT" | grep -oP 'Bump version: \K[0-9]+\.[0-9]+\.[0-9]+' || echo "0.2.0")
           echo "Extracted version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
@@ -66,7 +68,9 @@ jobs:
           rm -f dist/*
 
           # Create a properly formatted wheel name according to PEP 427
-          WHEEL_NAME="commit_buddy-${VERSION}-${{ matrix.variant }}-py3-none-any.whl"
+          # Format should be: {distribution}-{version}-{python tag}-{abi tag}-{platform tag}.whl
+          # The variant should be part of the distribution name, not a build tag
+          WHEEL_NAME="commit_buddy_${{ matrix.variant }}-${VERSION}-py3-none-any.whl"
 
           # Move the wheel file from temp to dist with new name
           mv temp_wheels/*.whl "dist/$WHEEL_NAME"
