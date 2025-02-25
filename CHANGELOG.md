@@ -1,3 +1,9 @@
+## 0.3.0 (2025-02-25)
+
+### Feat
+
+- Add AI-powered commit assistant with LangChain and local LLMs
+
 ## 0.2.0 (2025-02-17)
 
 ### Feat
