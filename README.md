@@ -1,6 +1,6 @@
 # CommitBuddy
 
-> 🚀 AI-Powered Git Commit Assistant with LangChain
+> 🚀 AI-Powered Git Commit Assistant with 🦜️🔗 LangChain
 
 [![PyPI version](https://badge.fury.io/py/commit-buddy.svg)](https://badge.fury.io/py/commit-buddy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
